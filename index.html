@@ -1,0 +1,1317 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Privy Sound</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* Light mode */
+        body.light-mode {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e7f1 100%);
+            color: #2c3e50;
+        }
+
+        /* Dark mode */
+        body.dark-mode {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #e0e0e0;
+        }
+
+        /* Theme toggle button */
+        .theme-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 48px;
+            height: 48px;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        body.light-mode .theme-toggle {
+            background: rgba(255, 255, 255, 0.6);
+            color: #2c3e50;
+        }
+
+        body.dark-mode .theme-toggle {
+            background: rgba(0, 0, 0, 0.3);
+            color: #e0e0e0;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+        }
+
+        .theme-toggle svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        /* Container */
+        .container {
+            width: 100%;
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header section */
+        .header {
+            margin-top: 60px;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            letter-spacing: -0.5px;
+        }
+
+        .header p {
+            font-size: 16px;
+            line-height: 1.6;
+            opacity: 0.8;
+        }
+
+        /* Button grid */
+        .button-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            flex: 1;
+        }
+
+        /* Play button */
+        .play-button {
+            position: relative;
+            padding: 20px 24px;
+            border: none;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            text-align: left;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        body.light-mode .play-button {
+            background: rgba(255, 255, 255, 0.7);
+            color: #2c3e50;
+        }
+
+        body.dark-mode .play-button {
+            background: rgba(0, 0, 0, 0.25);
+            color: #e0e0e0;
+        }
+
+        .play-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Touch device optimization */
+        @media (hover: none) {
+            .play-button:hover {
+                transform: none;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            }
+
+            .play-button:active {
+                transform: scale(0.98);
+            }
+        }
+
+        .play-button:active {
+            transform: translateY(0);
+        }
+
+        .play-button.playing {
+            box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.3);
+        }
+
+        /* Play icon */
+        .play-icon {
+            width: 48px;
+            height: 48px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+        }
+
+        body.light-mode .play-icon {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        body.dark-mode .play-icon {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .play-icon svg {
+            width: 24px;
+            height: 24px;
+            transition: all 0.3s ease;
+        }
+
+        .play-button.playing .play-icon svg {
+            fill: #4CAF50;
+        }
+
+        body.light-mode .play-button:not(.playing) .play-icon svg {
+            fill: #607D8B;
+        }
+
+        body.dark-mode .play-button:not(.playing) .play-icon svg {
+            fill: #90A4AE;
+        }
+
+        /* Button content */
+        .button-content {
+            flex: 1;
+        }
+
+        .button-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .button-description {
+            font-size: 14px;
+            opacity: 0.7;
+            line-height: 1.5;
+        }
+
+        /* Section titles */
+        .section-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-align: center;
+            letter-spacing: -0.5px;
+        }
+
+        body.light-mode .section-title {
+            color: #2c3e50;
+        }
+
+        body.dark-mode .section-title {
+            color: #e0e0e0;
+        }
+
+        /* Recently Played Section */
+        .frequent-section {
+            margin-bottom: 40px;
+        }
+
+        .frequent-section .section-title {
+            font-size: 20px;
+            margin-bottom: 16px;
+            position: relative;
+        }
+
+        .frequent-section .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 3px;
+            border-radius: 2px;
+        }
+
+        body.light-mode .frequent-section .section-title::after {
+            background: linear-gradient(90deg, #4CAF50, #66BB6A);
+        }
+
+        body.dark-mode .frequent-section .section-title::after {
+            background: linear-gradient(90deg, #66BB6A, #81C784);
+        }
+
+        .frequent-section .button-grid {
+            gap: 12px;
+        }
+
+        .frequent-section .play-button {
+            padding: 16px 20px;
+            border-radius: 12px;
+        }
+
+        .frequent-section .play-icon {
+            width: 40px;
+            height: 40px;
+        }
+
+        .frequent-section .button-title {
+            font-size: 16px;
+        }
+
+        .frequent-section .button-description {
+            font-size: 13px;
+        }
+
+        /* Responsive design */
+        @media (max-width: 375px) {
+            .container {
+                padding: 16px;
+            }
+
+            .header h1 {
+                font-size: 24px;
+            }
+
+            .play-button {
+                padding: 16px 20px;
+            }
+
+            .button-title {
+                font-size: 16px;
+            }
+        }
+
+        /* Tablet optimization (768px - 1024px) */
+        @media (min-width: 768px) {
+            .container {
+                max-width: 900px;
+                padding: 24px;
+            }
+
+            .header {
+                margin-top: 80px;
+                margin-bottom: 48px;
+            }
+
+            .header h1 {
+                font-size: 32px;
+                margin-bottom: 20px;
+            }
+
+            .header p {
+                font-size: 18px;
+            }
+
+            .section-title {
+                font-size: 28px;
+                margin-bottom: 24px;
+            }
+
+            .frequent-section .section-title {
+                font-size: 24px;
+                margin-bottom: 20px;
+            }
+
+            .frequent-section .section-title::after {
+                width: 80px;
+                height: 4px;
+            }
+
+            .button-grid {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 20px;
+            }
+
+            .frequent-section .button-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 16px;
+            }
+
+            /* Tablet portrait mode - show 2 columns for recent section */
+            @media (min-width: 768px) and (max-width: 834px) {
+                .frequent-section .button-grid {
+                    grid-template-columns: repeat(2, 1fr);
+                }
+            }
+
+            .play-button {
+                padding: 24px;
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                gap: 16px;
+            }
+
+            .frequent-section .play-button {
+                padding: 20px;
+            }
+
+            .play-icon {
+                width: 64px;
+                height: 64px;
+            }
+
+            .frequent-section .play-icon {
+                width: 48px;
+                height: 48px;
+            }
+
+            .play-icon svg {
+                width: 32px;
+                height: 32px;
+            }
+
+            .frequent-section .play-icon svg {
+                width: 24px;
+                height: 24px;
+            }
+
+            .sound-bars {
+                width: 32px;
+                height: 32px;
+                gap: 3px;
+            }
+
+            .frequent-section .sound-bars {
+                width: 24px;
+                height: 24px;
+                gap: 2px;
+            }
+
+            .sound-bar {
+                width: 4px;
+            }
+
+            .frequent-section .sound-bar {
+                width: 3px;
+            }
+
+            .button-title {
+                font-size: 20px;
+                margin-bottom: 8px;
+            }
+
+            .frequent-section .button-title {
+                font-size: 18px;
+            }
+
+            .button-description {
+                font-size: 16px;
+            }
+
+            .frequent-section .button-description {
+                font-size: 14px;
+            }
+
+            .theme-toggle {
+                top: 24px;
+                right: 24px;
+                width: 56px;
+                height: 56px;
+            }
+
+            .theme-toggle svg {
+                width: 28px;
+                height: 28px;
+            }
+        }
+
+        /* Large tablets and desktop (1025px and above) */
+        @media (min-width: 1025px) {
+            .container {
+                max-width: 1200px;
+            }
+
+            .button-grid {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 24px;
+            }
+
+            .frequent-section .button-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 20px;
+            }
+        }
+
+        /* Reduced motion preference */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                transition: none !important;
+                animation: none !important;
+            }
+        }
+
+        /* Loading animation */
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        /* Sound wave animation */
+        .play-button.playing .play-icon {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sound-bars {
+            display: none;
+            width: 24px;
+            height: 24px;
+            position: absolute;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 2px;
+        }
+
+        .play-button.playing .sound-bars {
+            display: flex;
+        }
+
+        .play-button.playing .play-svg,
+        .play-button.playing .pause-svg {
+            display: none !important;
+        }
+
+        .sound-bar {
+            width: 3px;
+            height: 100%;
+            background: #4CAF50;
+            border-radius: 2px;
+            transform-origin: bottom;
+            animation: soundWave 0.8s ease-in-out infinite;
+        }
+
+        .sound-bar:nth-child(1) {
+            animation-delay: 0s;
+            height: 60%;
+        }
+
+        .sound-bar:nth-child(2) {
+            animation-delay: 0.1s;
+            height: 80%;
+        }
+
+        .sound-bar:nth-child(3) {
+            animation-delay: 0.2s;
+            height: 100%;
+        }
+
+        .sound-bar:nth-child(4) {
+            animation-delay: 0.3s;
+            height: 70%;
+        }
+
+        .sound-bar:nth-child(5) {
+            animation-delay: 0.4s;
+            height: 90%;
+        }
+
+        body.dark-mode .sound-bar {
+            background: #66BB6A;
+        }
+
+        @keyframes soundWave {
+
+            0%,
+            100% {
+                transform: scaleY(0.3);
+            }
+
+            50% {
+                transform: scaleY(1);
+            }
+        }
+    </style>
+</head>
+
+<body class="light-mode">
+    <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+        <svg class="sun-icon" viewBox="0 0 24 24" fill="currentColor">
+            <path
+                d="M12 17.5C9.5 17.5 7.5 15.5 7.5 13S9.5 8.5 12 8.5 16.5 10.5 16.5 13 14.5 17.5 12 17.5M12 7C8.7 7 6 9.7 6 13S8.7 19 12 19 18 16.3 18 13 15.3 7 12 7M12 2L14.4 6.4L19 5.7L16.2 9.8L18.6 14L14 12.7L9.4 14L11.8 9.8L9 5.7L13.6 6.4L12 2M3.3 7L7.7 5.5L6.8 9.6L10.4 11.7L7.2 14.9L9.9 18.1L6 17.5L3.3 20.8L3.3 7M20.7 7L20.7 20.8L18 17.5L14 18.1L16.8 14.9L13.6 11.7L17.1 9.6L16.3 5.5L20.7 7Z" />
+        </svg>
+        <svg class="moon-icon" viewBox="0 0 24 24" fill="currentColor" style="display: none;">
+            <path
+                d="M17.75,4.09L15.22,6.03L16.13,9.09L13.5,7.28L10.87,9.09L11.78,6.03L9.25,4.09L12.44,4L13.5,1L14.56,4L17.75,4.09M21.25,11L19.61,12.25L20.2,14.23L18.5,13.06L16.8,14.23L17.39,12.25L15.75,11L17.81,10.95L18.5,9L19.19,10.95L21.25,11M18.97,15.95C19.8,15.87 20.69,17.05 20.16,17.8C19.84,18.25 19.5,18.67 19.08,19.07C15.17,23 8.84,23 4.94,19.07C1.03,15.17 1.03,8.83 4.94,4.93C5.34,4.53 5.76,4.17 6.21,3.85C6.96,3.32 8.14,4.21 8.06,5.04C7.79,7.9 8.75,10.87 10.95,13.06C13.14,15.26 16.1,16.22 18.97,15.95M17.33,17.97C14.5,17.81 11.7,16.64 9.53,14.5C7.36,12.31 6.2,9.5 6.04,6.68C3.23,9.82 3.34,14.64 6.35,17.66C9.37,20.67 14.19,20.78 17.33,17.97Z" />
+        </svg>
+    </button>
+
+    <div class="container">
+        <div class="header">
+            <h1>Privy Sound</h1>
+            <p>Stop the awkwardness<br> A simple tool to mask toilet sounds with audio for privacy and confidence.</p>
+        </div>
+
+        <!-- Recently Played Section -->
+        <div class="frequent-section" id="frequentSection" style="display: none;">
+            <h2 class="section-title">Recently Played</h2>
+            <div class="button-grid" id="frequentGrid">
+                <!-- Recently played sounds will be inserted here -->
+            </div>
+        </div>
+
+        <!-- All Music Section -->
+        <div class="all-music-section">
+            <h2 class="section-title">All Music</h2>
+            <div class="button-grid">
+                <button class="play-button" onclick="togglePlay(this, 'sound1')" data-sound-id="sound1">
+                    <div class="play-icon">
+                        <svg class="play-svg" viewBox="0 0 24 24">
+                            <path d="M8,5.14V19.14L19,12.14L8,5.14Z" />
+                        </svg>
+                        <svg class="pause-svg" viewBox="0 0 24 24" style="display: none;">
+                            <path d="M14,19H18V5H14M6,19H10V5H6V19Z" />
+                        </svg>
+                        <div class="sound-bars">
+                            <div class="sound-bar"></div>
+                            <div class="sound-bar"></div>
+                            <div class="sound-bar"></div>
+                            <div class="sound-bar"></div>
+                            <div class="sound-bar"></div>
+                        </div>
+                    </div>
+                    <div class="button-content">
+                        <div class="button-title">Engine Idling</div>
+                        <div class="button-description">Car engine idling<br>Deep mechanical ambience</div>
+                    </div>
+                </button>
+
+                <button class="play-button" onclick="togglePlay(this, 'sound2')" data-sound-id="sound2">
+                    <div class="play-icon">
+                        <svg class="play-svg" viewBox="0 0 24 24">
+                            <path d="M8,5.14V19.14L19,12.14L8,5.14Z" />
+                        </svg>
+                        <svg class="pause-svg" viewBox="0 0 24 24" style="display: none;">
+                            <path d="M14,19H18V5H14M6,19H10V5H6V19Z" />
+                        </svg>
+                        <div class="sound-bars">
+                            <div class="sound-bar"></div>
+                            <div class="sound-bar"></div>
+                            <div class="sound-bar"></div>
+                            <div class="sound-bar"></div>
+                            <div class="sound-bar"></div>
+                        </div>
+                    </div>
+                    <div class="button-content">
+                        <div class="button-title">Engine Running</div>
+                        <div class="button-description">Car engine running<br>Powerful motor sounds</div>
+                    </div>
+                </button>
+
+                <button class="play-button" onclick="togglePlay(this, 'sound3')" data-sound-id="sound3">
+                    <div class="play-icon">
+                        <svg class="play-svg" viewBox="0 0 24 24">
+                            <path d="M8,5.14V19.14L19,12.14L8,5.14Z" />
+                        </svg>
+                        <svg class="pause-svg" viewBox="0 0 24 24" style="display: none;">
+                            <path d="M14,19H18V5H14M6,19H10V5H6V19Z" />
+                        </svg>
+                        <div class="sound-bars">
+                            <div class="sound-bar"></div>
+                            <div class="sound-bar"></div>
+                            <div class="sound-bar"></div>
+                            <div class="sound-bar"></div>
+                            <div class="sound-bar"></div>
+                        </div>
+                    </div>
+                    <div class="button-content">
+                        <div class="button-title">Gusty Wind</div>
+                        <div class="button-description">Strong wind blowing<br>Stormy weather ambience</div>
+                    </div>
+                </button>
+
+                <button class="play-button" onclick="togglePlay(this, 'sound4')" data-sound-id="sound4">
+                    <div class="play-icon">
+                        <svg class="play-svg" viewBox="0 0 24 24">
+                            <path d="M8,5.14V19.14L19,12.14L8,5.14Z" />
+                        </svg>
+                        <svg class="pause-svg" viewBox="0 0 24 24" style="display: none;">
+                            <path d="M14,19H18V5H14M6,19H10V5H6V19Z" />
+                        </svg>
+                        <div class="sound-bars">
+                            <div class="sound-bar"></div>
+                            <div class="sound-bar"></div>
+                            <div class="sound-bar"></div>
+                            <div class="sound-bar"></div>
+                            <div class="sound-bar"></div>
+                        </div>
+                    </div>
+                    <div class="button-content">
+                        <div class="button-title">Ocean Waves</div>
+                        <div class="button-description">Calming ocean waves<br>Beach shoreline sounds</div>
+                    </div>
+                </button>
+
+                <button class="play-button" onclick="togglePlay(this, 'sound5')" data-sound-id="sound5">
+                    <div class="play-icon">
+                        <svg class="play-svg" viewBox="0 0 24 24">
+                            <path d="M8,5.14V19.14L19,12.14L8,5.14Z" />
+                        </svg>
+                        <svg class="pause-svg" viewBox="0 0 24 24" style="display: none;">
+                            <path d="M14,19H18V5H14M6,19H10V5H6V19Z" />
+                        </svg>
+                        <div class="sound-bars">
+                            <div class="sound-bar"></div>
+                            <div class="sound-bar"></div>
+                            <div class="sound-bar"></div>
+                            <div class="sound-bar"></div>
+                            <div class="sound-bar"></div>
+                        </div>
+                    </div>
+                    <div class="button-content">
+                        <div class="button-title">Raining Clouds</div>
+                        <div class="button-description">Heavy rain falling<br>Soothing rainfall sounds</div>
+                    </div>
+                </button>
+
+                <button class="play-button" onclick="togglePlay(this, 'sound6')" data-sound-id="sound6">
+                    <div class="play-icon">
+                        <svg class="play-svg" viewBox="0 0 24 24">
+                            <path d="M8,5.14V19.14L19,12.14L8,5.14Z" />
+                        </svg>
+                        <svg class="pause-svg" viewBox="0 0 24 24" style="display: none;">
+                            <path d="M14,19H18V5H14M6,19H10V5H6V19Z" />
+                        </svg>
+                        <div class="sound-bars">
+                            <div class="sound-bar"></div>
+                            <div class="sound-bar"></div>
+                            <div class="sound-bar"></div>
+                            <div class="sound-bar"></div>
+                            <div class="sound-bar"></div>
+                        </div>
+                    </div>
+                    <div class="button-content">
+                        <div class="button-title">River Noise</div>
+                        <div class="button-description">Flowing river water<br>Peaceful stream ambience</div>
+                    </div>
+                </button>
+
+                <button class="play-button" onclick="togglePlay(this, 'sound7')" data-sound-id="sound7">
+                    <div class="play-icon">
+                        <svg class="play-svg" viewBox="0 0 24 24">
+                            <path d="M8,5.14V19.14L19,12.14L8,5.14Z" />
+                        </svg>
+                        <svg class="pause-svg" viewBox="0 0 24 24" style="display: none;">
+                            <path d="M14,19H18V5H14M6,19H10V5H6V19Z" />
+                        </svg>
+                        <div class="sound-bars">
+                            <div class="sound-bar"></div>
+                            <div class="sound-bar"></div>
+                            <div class="sound-bar"></div>
+                            <div class="sound-bar"></div>
+                            <div class="sound-bar"></div>
+                        </div>
+                    </div>
+                    <div class="button-content">
+                        <div class="button-title">White Noise 1</div>
+                        <div class="button-description">Pure white noise<br>Perfect for concentration</div>
+                    </div>
+                </button>
+
+                <button class="play-button" onclick="togglePlay(this, 'sound8')" data-sound-id="sound8">
+                    <div class="play-icon">
+                        <svg class="play-svg" viewBox="0 0 24 24">
+                            <path d="M8,5.14V19.14L19,12.14L8,5.14Z" />
+                        </svg>
+                        <svg class="pause-svg" viewBox="0 0 24 24" style="display: none;">
+                            <path d="M14,19H18V5H14M6,19H10V5H6V19Z" />
+                        </svg>
+                        <div class="sound-bars">
+                            <div class="sound-bar"></div>
+                            <div class="sound-bar"></div>
+                            <div class="sound-bar"></div>
+                            <div class="sound-bar"></div>
+                            <div class="sound-bar"></div>
+                        </div>
+                    </div>
+                    <div class="button-content">
+                        <div class="button-title">White Noise 2</div>
+                        <div class="button-description">Alternative white noise<br>Different frequency profile</div>
+                    </div>
+                </button>
+            </div>
+        </div>
+
+        <script>
+            // Theme toggle
+            function toggleTheme() {
+                const body = document.body;
+                const sunIcon = document.querySelector('.sun-icon');
+                const moonIcon = document.querySelector('.moon-icon');
+
+                if (body.classList.contains('light-mode')) {
+                    body.classList.remove('light-mode');
+                    body.classList.add('dark-mode');
+                    sunIcon.style.display = 'none';
+                    moonIcon.style.display = 'block';
+                    localStorage.setItem('theme', 'dark');
+                } else {
+                    body.classList.remove('dark-mode');
+                    body.classList.add('light-mode');
+                    sunIcon.style.display = 'block';
+                    moonIcon.style.display = 'none';
+                    localStorage.setItem('theme', 'light');
+                }
+            }
+
+            // Check local storage for theme setting
+            function initTheme() {
+                const savedTheme = localStorage.getItem('theme');
+                const sunIcon = document.querySelector('.sun-icon');
+                const moonIcon = document.querySelector('.moon-icon');
+
+                if (savedTheme === 'dark') {
+                    document.body.classList.remove('light-mode');
+                    document.body.classList.add('dark-mode');
+                    sunIcon.style.display = 'none';
+                    moonIcon.style.display = 'block';
+                }
+            }
+
+            // Playback state management
+            let currentlyPlaying = null;
+            let audioElements = {};
+            let currentSoundId = null;
+            const PLAY_HISTORY_KEY = 'audioPlayHistory';
+
+            // Record play history (timestamp-based)
+            function recordPlayHistory(soundId) {
+                try {
+                    let playHistory = JSON.parse(localStorage.getItem(PLAY_HISTORY_KEY) || '{}');
+                    // Store timestamp for each play
+                    if (!playHistory[soundId]) {
+                        playHistory[soundId] = [];
+                    }
+                    // Add current timestamp (limit to last 100 plays to prevent storage bloat)
+                    playHistory[soundId].push(Date.now());
+                    if (playHistory[soundId].length > 100) {
+                        playHistory[soundId] = playHistory[soundId].slice(-100);
+                    }
+                    localStorage.setItem(PLAY_HISTORY_KEY, JSON.stringify(playHistory));
+                    console.log('Recorded play history for', soundId, 'total plays:', playHistory[soundId].length);
+                    return playHistory[soundId].length;
+                } catch (error) {
+                    console.error('Failed to record play history:', error);
+                    return 0;
+                }
+            }
+
+            // Check if a sound is in the current recent list
+            function isSoundInRecentList(soundId) {
+                try {
+                    const existingRecentKey = 'recentSoundsOrder';
+                    const existingRecent = JSON.parse(localStorage.getItem(existingRecentKey) || '[]');
+                    return existingRecent.includes(soundId);
+                } catch (error) {
+                    console.error('Failed to check if sound is in recent list:', error);
+                    return false;
+                }
+            }
+
+            // Clean up recent list by removing sounds that no longer have play history
+            function cleanupRecentList() {
+                try {
+                    const playHistory = JSON.parse(localStorage.getItem(PLAY_HISTORY_KEY) || '{}');
+                    const existingRecentKey = 'recentSoundsOrder';
+                    let currentOrder = JSON.parse(localStorage.getItem(existingRecentKey) || '[]');
+
+                    // Remove sounds that no longer have play history
+                    const cleanedOrder = currentOrder.filter(soundId =>
+                        playHistory[soundId] && playHistory[soundId].length > 0
+                    );
+
+                    if (cleanedOrder.length !== currentOrder.length) {
+                        localStorage.setItem(existingRecentKey, JSON.stringify(cleanedOrder));
+                        console.log('Cleaned up recent list from', currentOrder.length, 'to', cleanedOrder.length, 'items');
+                    }
+                } catch (error) {
+                    console.error('Failed to cleanup recent list:', error);
+                }
+            }
+
+            // Get last 3 recently played sounds (strictly ordered by when they were added to the list)
+            // Sounds maintain their position once added, only new sounds are added to the front
+            function getRecentlyPlayed() {
+                try {
+                    const playHistory = JSON.parse(localStorage.getItem(PLAY_HISTORY_KEY) || '{}');
+                    const existingRecentKey = 'recentSoundsOrder';
+
+                    // Get the current order from localStorage
+                    let currentOrder = JSON.parse(localStorage.getItem(existingRecentKey) || '[]');
+
+                    // Filter out sounds that no longer have play history
+                    currentOrder = currentOrder.filter(soundId =>
+                        playHistory[soundId] && playHistory[soundId].length > 0
+                    );
+
+                    const soundData = [];
+                    const addedSounds = new Set();
+
+                    // Add sounds in the current order (maintaining their positions)
+                    for (let i = 0; i < currentOrder.length && soundData.length < 3; i++) {
+                        const soundId = currentOrder[i];
+                        if (playHistory[soundId]) {
+                            const button = document.querySelector(`[data-sound-id="${soundId}"]`);
+                            if (button) {
+                                const title = button.querySelector('.button-title')?.textContent || soundId;
+                                const description = button.querySelector('.button-description')?.textContent || '';
+                                soundData.push({
+                                    id: soundId,
+                                    lastPlayed: Math.max(...playHistory[soundId]),
+                                    playCount: playHistory[soundId].length,
+                                    title: title,
+                                    description: description,
+                                    button: button.cloneNode(true)
+                                });
+                                addedSounds.add(soundId);
+                            }
+                        }
+                    }
+
+                    return soundData;
+                } catch (error) {
+                    console.error('Failed to get recently played:', error);
+                    return [];
+                }
+            }
+
+            // Add a new sound to the front of the recent list
+            function addSoundToRecent(soundId) {
+                try {
+                    const existingRecentKey = 'recentSoundsOrder';
+                    let currentOrder = JSON.parse(localStorage.getItem(existingRecentKey) || '[]');
+
+                    // Remove if already exists (to avoid duplicates)
+                    currentOrder = currentOrder.filter(id => id !== soundId);
+
+                    // Add to the front
+                    currentOrder.unshift(soundId);
+
+                    // Keep only the first 3
+                    currentOrder = currentOrder.slice(0, 3);
+
+                    localStorage.setItem(existingRecentKey, JSON.stringify(currentOrder));
+                    console.log('Added', soundId, 'to recent list. New order:', currentOrder);
+                } catch (error) {
+                    console.error('Failed to add sound to recent:', error);
+                }
+            }
+
+            // Render recently played section
+            function renderRecentlyPlayed() {
+                const recentSounds = getRecentlyPlayed();
+                const frequentSection = document.getElementById('frequentSection');
+                const frequentGrid = document.getElementById('frequentGrid');
+
+                if (recentSounds.length === 0) {
+                    frequentSection.style.display = 'none';
+                    return;
+                }
+
+                // Check if the current displayed sounds are the same as the new recent sounds
+                // This prevents unnecessary re-rendering when the recent sounds haven't changed
+                const currentDisplayedSounds = Array.from(frequentGrid.children).map(child =>
+                    child.getAttribute('data-sound-id')
+                ).filter(id => id !== null);
+
+                const newRecentSounds = recentSounds.map(sound => sound.id);
+
+                // Only re-render if the recent sounds have actually changed
+                const shouldRender = currentDisplayedSounds.length !== newRecentSounds.length ||
+                    !currentDisplayedSounds.every((id, index) => id === newRecentSounds[index]);
+
+                if (!shouldRender) {
+                    console.log('Recently played section unchanged, no new sounds to add');
+                    frequentSection.style.display = 'block';
+                    return;
+                }
+
+                console.log('Rendering recently played section with sounds:', newRecentSounds);
+                frequentSection.style.display = 'block';
+                frequentGrid.innerHTML = '';
+
+                recentSounds.forEach(sound => {
+                    const button = sound.button;
+                    button.setAttribute('onclick', `togglePlay(this, '${sound.id}')`);
+                    button.setAttribute('data-sound-id', sound.id);
+                    frequentGrid.appendChild(button);
+                });
+            }
+
+            // Audio file configuration
+            // Local audio files from src directory
+            const audioSources = {
+                'sound1': 'src/engine-idling.mp3',      // Engine Idling
+                'sound2': 'src/engine.mp3',             // Engine Running
+                'sound3': 'src/gusty-wind.mp3',         // Gusty Wind
+                'sound4': 'src/ocean-waves.mp3',        // Ocean Waves
+                'sound5': 'src/raining-clouds.mp3',     // Raining Clouds
+                'sound6': 'src/river-noise.mp3',        // River Noise
+                'sound7': 'src/white-noise-1.mp3',      // White Noise 1
+                'sound8': 'src/white-noise-2.mp3'       // White Noise 2
+            };
+
+            // Initialize audio
+            function initAudio() {
+                // Create Audio object for each sound source
+                for (let soundId in audioSources) {
+                    audioElements[soundId] = null;
+                }
+            }
+
+            // Create and configure audio object
+            function createAudio(soundId) {
+                if (audioElements[soundId]) {
+                    return audioElements[soundId];
+                }
+
+                const audio = new Audio();
+                audio.src = audioSources[soundId];
+                audio.loop = true;  // Enable loop playback
+                audio.preload = 'auto';  // Preload audio
+
+                // Listen for audio loading events
+                audio.addEventListener('loadeddata', function () {
+                    console.log('Audio loaded successfully:', soundId);
+                });
+
+                audio.addEventListener('error', function (e) {
+                    console.error('Audio loading failed:', soundId, e);
+                    console.error('Audio error details - Code:', audio.error?.code, 'Message:', audio.error?.message);
+                    console.error('Audio source URL:', audio.src);
+
+                    let errorMessage = '';
+                    if (audio.error) {
+                        switch (audio.error.code) {
+                            case 1:
+                                errorMessage = 'Audio loading aborted';
+                                break;
+                            case 2:
+                                errorMessage = 'Network error - Please check your connection';
+                                break;
+                            case 3:
+                                errorMessage = 'Audio decoding error - File may be corrupted';
+                                break;
+                            // case 4:
+                            //     errorMessage = 'Audio format not supported';
+                            //     break;
+                            // default:
+                            //     errorMessage = 'Unknown audio error';
+                        }
+                    }
+                    if (errorMessage) {
+                        showError(errorMessage + ' (' + soundId + ')');
+                    }
+                });
+
+                audio.addEventListener('ended', function () {
+                    // This event won't trigger because loop=true is set
+                    console.log('Audio playback ended:', soundId);
+                });
+
+                audioElements[soundId] = audio;
+                return audio;
+            }
+
+            // Display error message
+            function showError(message) {
+                // Create temporary error notification
+                const errorDiv = document.createElement('div');
+                errorDiv.textContent = message;
+                errorDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: rgba(244, 67, 54, 0.9);
+                color: white;
+                padding: 12px 24px;
+                border-radius: 8px;
+                z-index: 1000;
+                font-size: 14px;
+                backdrop-filter: blur(10px);
+                -webkit-backdrop-filter: blur(10px);
+            `;
+                document.body.appendChild(errorDiv);
+
+                setTimeout(() => {
+                    errorDiv.remove();
+                }, 3000);
+            }
+
+            // Toggle playback state
+            function togglePlay(button, soundId) {
+                const isPlaying = button.classList.contains('playing');
+
+                // If there's currently playing audio, stop it first
+                if (currentlyPlaying && currentlyPlaying !== button) {
+                    const currentSoundId = currentlyPlaying.getAttribute('data-sound-id');
+                    stopPlayback(currentlyPlaying, currentSoundId);
+                }
+
+                if (isPlaying) {
+                    stopPlayback(button, soundId);
+                } else {
+                    startPlayback(button, soundId);
+                }
+            }
+
+            // Start playback
+            async function startPlayback(button, soundId) {
+                // Find all buttons with this soundId (including both All Music and Recently Played)
+                const allButtons = document.querySelectorAll(`[data-sound-id="${soundId}"]`);
+                
+                // Set playing state for all matching buttons
+                allButtons.forEach(btn => {
+                    btn.classList.add('playing');
+                    btn.classList.add('loading');
+
+                    // Switch icons for all matching buttons
+                    const playSvg = btn.querySelector('.play-svg');
+                    const pauseSvg = btn.querySelector('.pause-svg');
+                    if (playSvg) playSvg.style.display = 'none';
+                    if (pauseSvg) pauseSvg.style.display = 'block';
+                });
+
+                currentlyPlaying = button;
+                currentSoundId = soundId;
+
+                try {
+                    // Create or get audio object
+                    const audio = createAudio(soundId);
+
+                    // If audio hasn't loaded yet, wait for it to load
+                    if (audio.readyState < 2) {
+                        await new Promise((resolve, reject) => {
+                            const timeout = setTimeout(() => {
+                                console.warn('Audio loading timeout for:', soundId, 'Ready state:', audio.readyState, 'Network state:', audio.networkState);
+                                reject(new Error('Audio loading timeout after 30 seconds'));
+                            }, 30000); // 30 second timeout for large files or slow networks
+
+                            audio.addEventListener('canplaythrough', function onCanPlay() {
+                                clearTimeout(timeout);
+                                audio.removeEventListener('canplaythrough', onCanPlay);
+                                resolve();
+                            });
+
+                            audio.addEventListener('error', function onError() {
+                                clearTimeout(timeout);
+                                audio.removeEventListener('error', onError);
+                                console.error('Audio loading failed for:', soundId);
+                                reject(new Error('Audio loading failed - Please check if the audio file exists and is accessible'));
+                            });
+
+                            // Additional logging for debugging
+                            audio.addEventListener('stalled', function () {
+                                console.warn('Audio loading stalled for:', soundId);
+                            });
+
+                            audio.addEventListener('suspend', function () {
+                                console.warn('Audio loading suspended for:', soundId);
+                            });
+                        });
+                    }
+
+                    // Play audio
+                    await audio.play();
+
+                    // Remove loading state for all buttons with this soundId
+                    const allButtons = document.querySelectorAll(`[data-sound-id="${soundId}"]`);
+                    allButtons.forEach(btn => {
+                        btn.classList.remove('loading');
+                    });
+
+                    console.log('Started playing:', soundId);
+
+                    // Record play history
+                    recordPlayHistory(soundId);
+
+                    // Check if this sound is already in the recent list
+                    const isAlreadyInRecent = isSoundInRecentList(soundId);
+
+                    // If the sound is NOT in recently played list, add it to the front
+                    // and update the display
+                    if (!isAlreadyInRecent) {
+                        addSoundToRecent(soundId);
+                        setTimeout(() => {
+                            renderRecentlyPlayed();
+                        }, 100); // Small delay to ensure storage is updated
+                    } else {
+                        console.log('Sound already in recent list, maintaining its position');
+                    }
+
+                } catch (error) {
+                    console.error('Playback failed:', error);
+                    button.classList.remove('loading');
+
+                    let errorMessage = error.message;
+                    if (errorMessage.includes('timeout')) {
+                        errorMessage = 'Audio loading timeout. File may be too large or network too slow.';
+                    } else if (errorMessage.includes('loading failed')) {
+                        errorMessage = 'Failed to load audio. Please check if the audio file is accessible.';
+                    } else if (error.name === 'NotAllowedError') {
+                        errorMessage = 'Audio playback blocked. Please interact with the page first.';
+                    } else if (error.name === 'NotSupportedError') {
+                        errorMessage = 'Audio format not supported by your browser.';
+                    }
+
+                    showError(errorMessage + ' (' + soundId + ')');
+
+                    // Reset playback state
+                    stopPlayback(button, soundId);
+                }
+            }
+
+// Stop playback for all buttons with the same soundId
+        function stopPlayback(button, soundId) {
+            // Find all buttons with this soundId (including both All Music and Recently Played)
+            const allButtons = document.querySelectorAll(`[data-sound-id="${soundId}"]`);
+            
+            // Stop all matching buttons
+            allButtons.forEach(btn => {
+                btn.classList.remove('playing');
+                btn.classList.remove('loading');
+
+                // Switch icons for all matching buttons
+                const playSvg = btn.querySelector('.play-svg');
+                const pauseSvg = btn.querySelector('.pause-svg');
+                if (playSvg) playSvg.style.display = 'block';
+                if (pauseSvg) pauseSvg.style.display = 'none';
+            });
+
+            // Clear global playing state
+            if (currentlyPlaying && currentlyPlaying.getAttribute('data-sound-id') === soundId) {
+                currentlyPlaying = null;
+                currentSoundId = null;
+            }
+
+            // Stop audio
+            if (soundId && audioElements[soundId]) {
+                try {
+                    audioElements[soundId].pause();
+                    audioElements[soundId].currentTime = 0; // Reset to beginning
+                } catch (error) {
+                    console.error('Failed to stop audio:', error);
+                }
+            }
+
+            console.log('Stopped playing:', soundId);
+        }
+
+            // Initialize on page load
+            document.addEventListener('DOMContentLoaded', function () {
+                initTheme();
+                initAudio();
+                cleanupRecentList(); // Clean up any invalid entries
+                renderRecentlyPlayed();
+
+                // Add touch feedback (mobile optimization)
+                const buttons = document.querySelectorAll('.play-button');
+                buttons.forEach(button => {
+                    button.addEventListener('touchstart', function () {
+                        this.style.transform = 'scale(0.98)';
+                    });
+
+                    button.addEventListener('touchend', function () {
+                        setTimeout(() => {
+                            this.style.transform = '';
+                        }, 100);
+                    });
+                });
+            });
+
+            // Clean up audio resources on page unload
+            window.addEventListener('beforeunload', function () {
+                // Stop all audio
+                for (let soundId in audioElements) {
+                    if (audioElements[soundId]) {
+                        try {
+                            audioElements[soundId].pause();
+                            audioElements[soundId].src = '';
+                            audioElements[soundId].load();
+                            audioElements[soundId] = null;
+                        } catch (error) {
+                            console.error('Failed to clean up audio:', error);
+                        }
+                    }
+                }
+
+                // Reset state if there's a currently playing button
+                if (currentlyPlaying) {
+                    currentlyPlaying.classList.remove('playing', 'loading');
+                    const playSvg = currentlyPlaying.querySelector('.play-svg');
+                    const pauseSvg = currentlyPlaying.querySelector('.pause-svg');
+                    if (playSvg) playSvg.style.display = 'block';
+                    if (pauseSvg) pauseSvg.style.display = 'none';
+                }
+            });
+
+            // Test audio URLs on page load (for debugging)
+            window.testAudioUrls = async function () {
+                console.log('Testing audio URLs...');
+                const results = {};
+
+                for (let soundId in audioSources) {
+                    try {
+                        console.log(`Testing ${soundId}: ${audioSources[soundId]}`);
+                        const response = await fetch(audioSources[soundId], {
+                            method: 'HEAD',
+                            mode: 'no-cors'
+                        });
+                        results[soundId] = {
+                            url: audioSources[soundId],
+                            status: 'URL accessible (basic check)',
+                            note: 'Actual playback may still be blocked by CORS or other restrictions'
+                        };
+                    } catch (error) {
+                        results[soundId] = {
+                            url: audioSources[soundId],
+                            status: 'URL may be inaccessible',
+                            error: error.message,
+                            note: 'This URL might have CORS restrictions or be blocked'
+                        };
+                    }
+                }
+
+                console.log('Audio URL test results:', results);
+                return results;
+            };
+
+            // Prevent page zooming (mobile optimization)
+            document.addEventListener('touchmove', function (event) {
+                if (event.scale !== 1) {
+                    event.preventDefault();
+                }
+            }, { passive: false });
+
+            // Auto-test URLs 2 seconds after page load
+            setTimeout(() => {
+                console.log('You can test audio URLs by running: testAudioUrls() in browser console');
+            }, 2000);
+        </script>
+</body>
+
+</html>
