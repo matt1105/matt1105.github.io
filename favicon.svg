@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Background circle -->
+  <circle cx="50" cy="50" r="48" fill="#4CAF50"/>
+  
+  <!-- Sound waves -->
+  <g fill="white">
+    <rect x="25" y="35" width="4" height="30" rx="2"/>
+    <rect x="35" y="25" width="4" height="50" rx="2"/>
+    <rect x="45" y="15" width="4" height="70" rx="2"/>
+    <rect x="55" y="25" width="4" height="50" rx="2"/>
+    <rect x="65" y="35" width="4" height="30" rx="2"/>
+  </g>
+  
+  <!-- Center dot -->
+  <circle cx="50" cy="50" r="8" fill="white"/>
+</svg>
